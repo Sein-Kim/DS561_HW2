@@ -182,7 +182,7 @@ def main():
                     inputs = torch.cat((inputs[:,:,1:], outputs.reshape(30,-1,1)),axis=2)
                 else:
                     inputs = torch.cat((inputs[:,:,1:], outputs.unsqueeze(0)), axis=2)
-    f = open(f'./{args.savepath}day_{args.day}_residual_{args.residual}_cycle_{args.cycle}_cycletype_{args.cyclepath}.txt','a')
+    f = open(f'./{args.savepath}_{args.model_name}_day_{args.day}_residual_{args.residual}_cycle_{args.cycle}_cycletype_{args.cyclepath}.txt','a')
     f.write('15 min loss: ' + str(sum(loss_15)/len(loss_15))+'\n')
     f.write('30 min loss: ' + str(sum(loss_30)/len(loss_30))+'\n')
     f.write('60 min loss: ' + str(sum(loss_60)/len(loss_60))+'\n')
