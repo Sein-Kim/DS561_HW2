@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--beta1', type=float, default=0.9,
                         help='hyperpara-Adam')
     parser.add_argument('--L2', default=0.75, type=float)
-    parser.add_argument('--savepath',type=str, default='./saved_models/cnn')
+    parser.add_argument('--savepath',type=str, default='./saved_results/')
     parser.add_argument('--rho', default=0.2, type=float)
     parser.add_argument('--seed', type=int, default = 10)
     parser.add_argument('--lr', type = float, default=0.001)
@@ -38,6 +38,9 @@ def main():
     parser.add_argument('--batch_size', type=int,default=256)
     parser.add_argument('--day', type=int, default=0)
     parser.add_argument('--residual', type=int, default = 1)
+    parser.add_argument('--cycle', type=int, default = 1)
+    parser.add_argument('--cyclepath',type=str, default='./node_idx/core_cycle_1.pkl')
+
     args = parser.parse_args()
     
     np.random.seed(args.seed)
@@ -91,12 +94,11 @@ def main():
     len_train = len(train_set)
     count = 0
     best_acc = 0
-    
+    INFO_LOG("-------------------------------------------------------train")
     for epoch in range(args.epochs):
         model.train()
         train_loss = 0
         start = time.time()
-        INFO_LOG("-------------------------------------------------------train")
         if args.day:
             for i in range(train_set.shape[2]-model_para['time_window']):
                 inputs = train_set[:,:,:-1][:,:,i:i+model_para['time_window']].to(args.device)
@@ -180,7 +182,11 @@ def main():
                     inputs = torch.cat((inputs[:,:,1:], outputs.reshape(30,-1,1)),axis=2)
                 else:
                     inputs = torch.cat((inputs[:,:,1:], outputs.unsqueeze(0)), axis=2)
-                    
+    f = open(f'./{args.savepath}day_{args.day}_residual_{args.residual}_cycle_{args.cycle}_cycletype_{args.cyclepath}.txt','a')
+    f.write('15 min loss: ' + str(sum(loss_15)/len(loss_15))+'\n')
+    f.write('30 min loss: ' + str(sum(loss_30)/len(loss_30))+'\n')
+    f.write('60 min loss: ' + str(sum(loss_60)/len(loss_60))+'\n')
+    f.close()
     print("15 min loss:",sum(loss_15)/len(loss_15))
     print("30 min loss:",sum(loss_30)/len(loss_30))
     print("60 min loss:",sum(loss_60)/len(loss_60))

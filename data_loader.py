@@ -1,10 +1,15 @@
 import numpy as np
 import pandas as pd
 import torch
+import pickle
 
 class Data_Loader_Day:
     def __init__(self,args):
-        data_file = args.datapath        
+        data_file = args.datapath
+        self.args = args
+        if args.cycle:
+            with open(args.cyclepath, 'rb') as f:
+                self.cycle_index = pickle.load(f)        
         data = self.get_data(data_file)
         self.data = data
 
@@ -24,13 +29,19 @@ class Data_Loader_Day:
         for c in col_s:
             filtered_columns = [col for col in speed_data.columns if c in col]
             filtered_df = speed_data[filtered_columns[:287]].to_numpy()
-            datas.append(filtered_df)
+            if self.args.cycle:
+                datas.append(filtered_df[self.cycle_index])
+            else:
+                datas.append(filtered_df)
         return torch.FloatTensor(datas)
     
 class Data_Loader:
     def __init__(self,args):
         super(Data_Loader, self).__init__()
-        data_file = args.datapath        
+        data_file = args.datapath
+        if args.cycle:
+            with open(args.cyclepath, 'rb') as f:
+                self.cycle_index = pickle.load(f)         
         train_set, labels, valid_set = self.get_data(data_file,args)
         self.train_set = train_set
         self.labels = labels
@@ -58,8 +69,12 @@ class Data_Loader:
         data = []
         labels = []
         for i in range(train_set.shape[1]-args.time_window):
-            data.append(train_set[:,i:i+args.time_window])
-            labels.append(train_set[:,i+args.time_window])
+            if args.cycle:
+                data.append(train_set[self.cycle_index,i:i+args.time_window])
+                labels.append(train_set[self.cycle_index,i+args.time_window])
+            else:
+                data.append(train_set[:,i:i+args.time_window])
+                labels.append(train_set[:,i+args.time_window])
         batch_data, batch_labels = self.make_batch([data,labels],args)
         
         return batch_data, batch_labels, torch.FloatTensor(valid_set)
