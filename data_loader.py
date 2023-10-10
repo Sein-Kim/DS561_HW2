@@ -63,18 +63,21 @@ class Data_Loader:
     
     def get_data(self, path, args):
         df = pd.read_csv(path)
-        speed_data = df.drop(columns=['Link_ID_1'	,'Link_ID_2',	'Center_Point_1',	'Center_Point_2',	'Limit'	,'Length',	'Direction']).to_numpy()
+        if 'core' in args.datapath :
+            speed_data = df.drop(columns=['Link_ID_1'   ,'Link_ID_2',   'Center_Point_1',   'Center_Point_2',   'Limit' ,'Length',  'Direction']).to_numpy()
+        else :
+            speed_data = df.drop(columns=['Link_ID_1','Start_1','Start_2','End_1','End_2','Limit','-']).to_numpy()
+        # speed_data = df.drop(columns=['Link_ID_1'	,'Link_ID_2',	'Center_Point_1',	'Center_Point_2',	'Limit'	,'Length',	'Direction']).to_numpy()
         dev_sample_index = -1 * int(args.split_percentage * float(speed_data.shape[1]))
-        train_set, valid_set = speed_data[:,:dev_sample_index], speed_data[:,dev_sample_index:]
+        if args.cycle:
+            train_set, valid_set = speed_data[self.cycle_index,:dev_sample_index], speed_data[self.cycle_index,dev_sample_index:]
+        else:
+            train_set, valid_set = speed_data[:,:dev_sample_index], speed_data[:,dev_sample_index:]
         data = []
         labels = []
         for i in range(train_set.shape[1]-args.time_window):
-            if args.cycle:
-                data.append(train_set[self.cycle_index,i:i+args.time_window])
-                labels.append(train_set[self.cycle_index,i+args.time_window])
-            else:
-                data.append(train_set[:,i:i+args.time_window])
-                labels.append(train_set[:,i+args.time_window])
+            data.append(train_set[:,i:i+args.time_window])
+            labels.append(train_set[:,i+args.time_window])
         batch_data, batch_labels = self.make_batch([data,labels],args)
         
         return batch_data, batch_labels, torch.FloatTensor(valid_set)

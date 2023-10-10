@@ -17,22 +17,18 @@ np.random.seed(10)
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--top_k', type=int, default=5,
-                        help='Sample from top k predictions')
     parser.add_argument('--gpu_num', type=str, default='cpu')
-    parser.add_argument('--epochs',type=int, default=100)
+    parser.add_argument('--epochs',type=int, default=150)
     parser.add_argument('--beta1', type=float, default=0.9,
                         help='hyperpara-Adam')
-    parser.add_argument('--L2', default=0.75, type=float)
     parser.add_argument('--savepath',type=str, default='./saved_results/')
     parser.add_argument('--rho', default=0.2, type=float)
-    parser.add_argument('--seed', type=int, default = 10)
-    parser.add_argument('--lr', type = float, default=0.001)
-    parser.add_argument('--datapath', type=str, default='./../SeoulData/urban-core_v2.csv',
+    parser.add_argument('--seed', type=int, default = 0)
+    parser.add_argument('--lr', type = float, default=0.0005)
+    parser.add_argument('--datapath', type=str, default='./SeoulData/urban-core_v2.csv',
                         help='data path')
     parser.add_argument('--split_percentage', type=float, default=0.2,
                         help='0.2 means 80% training 20% testing')
-    parser.add_argument('--clipgrad',type=int, default = 1000)
     parser.add_argument('--model_name', type=str,default='CNN')
     parser.add_argument('--time_window', type=int,default=6)
     parser.add_argument('--batch_size', type=int,default=256)
@@ -74,7 +70,7 @@ def main():
         residual =False
     model_para = {
         'dilated_channels': 256,
-        'dilations': [1,4,1,4,1,4,1,4,],
+        'dilations': [1,4,1,4,1,],
         'kernel_size': 3,
         'learning_rate':args.lr,
         'time_window':args.time_window,
